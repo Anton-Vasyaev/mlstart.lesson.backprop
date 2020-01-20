@@ -1,0 +1,10 @@
+# Build results
+.idea
+.vscode
+venv
+data
+__pycache__
+
+# Resources
+resource/**
+gen/**
