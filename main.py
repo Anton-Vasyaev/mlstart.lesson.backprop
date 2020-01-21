@@ -2,7 +2,7 @@
 import os
 import random
 # 3rd party
-import cv2 as cv
+import numpy as np
 # project
 from trainLoad import load_data, load_labels
 from nodes import Dense, Sigmoid, SquareLoss
@@ -28,15 +28,71 @@ def backward_net(
         loss_data = neuro_net_list[i].backward(loss_data, learning_rate)
 
 
-def train_example(
+def SGD_train_example(
     neuro_net_list,
-    x_data, 
-    y_data, 
+    x_batch, 
+    y_batch, 
     learning_rate
 ):
-    forward_net(neuro_net_list, x_data)
-    backward_net(neuro_net_list, y_data, learning_rate)
-    
+    if x_batch.shape[0] != y_batch.shape[0]:
+        raise 'batch size of x and y not equal'
+
+    for example_idx in range(x_batch.shape[0]):
+        x_example = x_batch[example_idx]
+        y_example = y_batch[example_idx]
+
+        forward_net(neuro_net_list, x_example)
+
+        backward_loss = y_example
+        for layer_idx in range(len(neuro_net_list) - 1, -1, -1):
+            backward_loss, delta_params = neuro_net_list[layer_idx].backward(
+                backward_loss
+            )
+            layer_params = neuro_net_list[layer_idx].get_params()
+
+            for param_name, delta in delta_params.items():
+                layer_params[param_name] += delta * learning_rate
+
+
+def BATCH_train_example(
+    neuro_net_list,
+    x_batch, 
+    y_batch, 
+    learning_rate
+):
+    if x_batch.shape[0] != y_batch.shape[0]:
+        raise 'batch size of x and y not equal'
+
+    delta_weights_dict = {}
+
+    for layer_idx in range(len(neuro_net_list)):
+        params = neuro_net_list[layer_idx].get_params()
+        if len(params) != 0:
+            delta_params = {}
+            for param_name, param in params.items():
+                delta_params[param_name] = np.zeros(param.shape)
+            delta_weights_dict[layer_idx] = delta_params
+
+    for example_idx in range(x_batch.shape[0]):
+        x_example = x_batch[example_idx]
+        y_example = y_batch[example_idx]
+
+        forward_net(neuro_net_list, x_example)
+
+        backward_loss = y_example
+        for layer_idx in range(len(neuro_net_list) - 1, -1, -1):
+            backward_loss, delta_params = neuro_net_list[layer_idx].backward(
+                backward_loss
+            )
+            layer_params = neuro_net_list[layer_idx].get_params()
+
+            for param_name, delta in delta_params.items():
+                delta_weights_dict[layer_idx][param_name] += delta * learning_rate
+
+    for layer_idx, deltas in delta_weights_dict.items():
+        for param_name, delta in deltas.items()
+            neuro_net_list[layer_idx][param_name] += delta
+
 
 def loss_classifier(
     neuro_net_list,
@@ -58,8 +114,8 @@ def loss_classifier(
 
 if __name__ == '__main__':
     LEARNING_RATE = 0.01
-    BATCH_SIZE = 20
-    EPOCHS = 2000
+    EPOCHS = 1510
+    BATCH_SIZE = 10
 
     x_train = load_data(
         os.path.join('resources', 'train-images.idx3-ubyte')
@@ -75,6 +131,8 @@ if __name__ == '__main__':
         os.path.join('resources', 't10k-labels.idx1-ubyte')
     )
 
+    train_size = x_train.shape[0]
+
     neuronet = list()
     neuronet.append(Dense(784, 100))
     neuronet.append(Sigmoid())
@@ -84,31 +142,29 @@ if __name__ == '__main__':
 
     neuronet.append(SquareLoss())
 
+    iteration_counter = 0
+
     for epoch_i in range(EPOCHS):
-        for batch_i in range(BATCH_SIZE):
-            rand_idx = random.randrange(0, x_train.shape[0])
+        random_batch = np.random.randint(train_size, size=BATCH_SIZE)
+        x_batch = x_train[random_batch,:,:]
+        y_batch = y_train[random_batch,:]
 
-            x_img = x_train[rand_idx]
-            y_labels = y_train[rand_idx]
+        iteration_counter += 1
+        rand_idx = random.randrange(0, x_train.shape[0])
+        x_img = x_train[rand_idx]
+        y_labels = y_train[rand_idx]
 
-            train_example(
-                neuronet,
-                x_img,
-                y_labels,
-                LEARNING_RATE
-            )
-        if epoch_i % 100 == 0:
+        SGD_train_example(
+            neuronet,
+            x_batch,
+            y_batch,
+            LEARNING_RATE
+        )
+        if epoch_i % 100 == 0 and epoch_i != 0:
             loss = loss_classifier(
                 neuronet,
                 x_test,
                 y_test
             )
             print(f'epoch:{epoch_i}, loss:{loss}')
-        
-    loss = loss_classifier(
-        neuronet,
-        x_test,
-        y_test
-    )
-    print(f'loss after train:{loss}')
     

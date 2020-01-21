@@ -18,13 +18,18 @@ class SquareLoss:
         return input_data.copy()
 
 
-    def backward(self, loss, lr):
+    def backward(self, loss):
         if loss.shape != self.input_data.shape:
             raise('wrong shape')
 
         loss = -(self.input_data - loss)
 
-        return loss
+        return loss, {}
+
+    
+    def get_params(self):
+        return {}
+
 
 
 class Sigmoid:
@@ -38,13 +43,18 @@ class Sigmoid:
         return self.input_data.copy()
 
 
-    def backward(self, loss, lr):
+    def backward(self, loss):
         loss = (
             self.input_data * 
             (1 - self.input_data)
         ) * loss
 
-        return loss
+        return loss, {}
+
+    
+    def get_params(self):
+        return {}
+
 
 
 class Dense:
@@ -74,17 +84,21 @@ class Dense:
         return self.input_data.dot(self.weights) + self.biases
 
     
-    def backward(self, loss, lr):
+    def backward(self, loss):
         if len(loss.shape) != 1 or loss.shape[0] != self.output_size:
             raise 'wrong tensor shape of loss'
 
-        loss_lr = loss * lr
-
-        delta_weights = np.outer(self.input_data, loss_lr)
+        delta_weights = np.outer(self.input_data, loss)
+        delta_biases = loss.copy()
 
         weights_t = self.weights.transpose(1, 0)
+        loss_out = loss.dot(weights_t)
 
-        self.weights += delta_weights
-        self.biases += loss_lr
+        return loss_out, { 
+            'w' : delta_weights, 
+            'b' : delta_biases 
+        }
+    
 
-        return loss.dot(weights_t)
+    def get_params(self):
+        return { 'w' : self.weights, 'b' : self.biases }
