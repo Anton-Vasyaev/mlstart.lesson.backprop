@@ -22,7 +22,7 @@ class SquareLoss:
         if loss.shape != self.input_data.shape:
             raise('wrong shape')
 
-        loss = -(self.input_data - loss)
+        loss = -(loss - self.input_data)
 
         return loss, {}
 

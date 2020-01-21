@@ -51,7 +51,7 @@ def SGD_train_example(
             layer_params = neuro_net_list[layer_idx].get_params()
 
             for param_name, delta in delta_params.items():
-                layer_params[param_name] += delta * learning_rate
+                layer_params[param_name] += -delta * learning_rate
 
 
 def BATCH_train_example(
@@ -62,6 +62,7 @@ def BATCH_train_example(
 ):
     if x_batch.shape[0] != y_batch.shape[0]:
         raise 'batch size of x and y not equal'
+    batch_size = x_batch.shape[0]
 
     delta_weights_dict = {}
 
@@ -87,11 +88,11 @@ def BATCH_train_example(
             layer_params = neuro_net_list[layer_idx].get_params()
 
             for param_name, delta in delta_params.items():
-                delta_weights_dict[layer_idx][param_name] += delta * learning_rate
+                delta_weights_dict[layer_idx][param_name] += -delta * learning_rate
 
     for layer_idx, deltas in delta_weights_dict.items():
-        for param_name, delta in deltas.items()
-            neuro_net_list[layer_idx][param_name] += delta
+        for param_name, delta in deltas.items():
+            neuro_net_list[layer_idx].get_params()[param_name] += delta
 
 
 def loss_classifier(
@@ -113,9 +114,9 @@ def loss_classifier(
 
 
 if __name__ == '__main__':
-    LEARNING_RATE = 0.01
-    EPOCHS = 1510
-    BATCH_SIZE = 10
+    LEARNING_RATE = 0.1
+    EPOCHS = 1000
+    BATCH_SIZE = 40
 
     x_train = load_data(
         os.path.join('resources', 'train-images.idx3-ubyte')
