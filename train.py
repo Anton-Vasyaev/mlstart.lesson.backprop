@@ -114,8 +114,8 @@ def loss_classifier(
 
 
 if __name__ == '__main__':
-    LEARNING_RATE = 0.1
-    EPOCHS = 1000
+    LEARNING_RATE = 0.03
+    EPOCHS = 1010
     BATCH_SIZE = 40
 
     x_train = load_data(
@@ -143,14 +143,11 @@ if __name__ == '__main__':
 
     neuronet.append(SquareLoss())
 
-    iteration_counter = 0
-
     for epoch_i in range(EPOCHS):
         random_batch = np.random.randint(train_size, size=BATCH_SIZE)
         x_batch = x_train[random_batch,:,:]
         y_batch = y_train[random_batch,:]
 
-        iteration_counter += 1
         rand_idx = random.randrange(0, x_train.shape[0])
         x_img = x_train[rand_idx]
         y_labels = y_train[rand_idx]

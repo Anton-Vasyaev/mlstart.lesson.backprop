@@ -1,23 +1,7 @@
 # 3rdparty
 import numpy as np
+import numpy as np
 import cv2 as cv
-
-
-def our_func(x, y, range, numpy_size):
-    x = x / numpy_size
-    y = y / numpy_size
-    min_r = range[0]
-    max_r = range[1]
-    r_range = (max_r - min_r)
-    
-    x = x * r_range + min_r
-    y = y * r_range + min_r
-
-    return 0.5*(x ** 3) + 10*(x ** 2) + 10*(y ** 2) + 2*y + y ** 3
-
-
-def calculate_gradient(x, y):
-    grad_x = 1.5 * (x ** 2)
 
 
 def segment_func(x, max_value, segments):
@@ -61,7 +45,7 @@ def visualise_func(map_array, graident_way, options):
         x *= img_size
         y = (y - min_r) / range_val
         y *= img_size
-        cv.circle(img_show, (int(x), int(y)), 5, (0, 0, 255))
+        cv.circle(img_show, (int(x), int(y)), 1, (0, 0, 255), 10)
 
 
     cv.imshow('result', img_show)
@@ -79,20 +63,58 @@ def get_map_func(func, options):
     )
     return result_mat
 
+def our_func(x, y, range, numpy_size):
+    x = x / numpy_size
+    y = y / numpy_size
+    min_r = range[0]
+    max_r = range[1]
+    r_range = (max_r - min_r)
+    
+    x = x * r_range + min_r
+    y = y * r_range + min_r
+
+    return calculate_f(x, y)
+
+
+def calculate_f(x, y):
+    return 0.5*(x ** 3) + 10*(x ** 2) + 10*(y ** 2) + 2*y + y ** 3
+
+
+def calculate_gradient_f(x, y):
+    grad_x = 1.5 * (x ** 2) + 20 * x
+    grad_y = 3 * (y ** 2) + 20 * y + 2
+
+    return grad_x, grad_y
+
 
 if __name__ == '__main__':
     options = {
         'img_size' : 900,
         'segments' : 30,
         'min_r' : -8.0,
-        'max_r' : 5.0
+        'max_r' : 5.0,
+        'rate' : 0.03
     }
+
+    rate = options['rate']
+
+    gradient_way = [(-7.0, -6.3)]
 
     result_mat = get_map_func(our_func, options)
 
 
     while True:
-        visualise_func(result_mat, [(-7.0, -2.3)], options)
-        key = cv.waitKey(100)
+        x, y = gradient_way[-1]
+        delta_x, delta_y = grad_calc = calculate_gradient_f(
+            x, 
+            y
+        )
+
+        x += -delta_x * rate
+        y += -delta_y * rate
+        gradient_way.append((x, y))
+
+        visualise_func(result_mat, gradient_way, options)
+        key = cv.waitKey(500)
         if key == 27:
             break
