@@ -93,7 +93,7 @@ if __name__ == '__main__':
         'segments' : 30,
         'min_r' : -8.0,
         'max_r' : 5.0,
-        'rate' : 0.03
+        'rate' : 0.1
     }
 
     rate = options['rate']

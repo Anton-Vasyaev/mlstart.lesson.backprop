@@ -114,7 +114,7 @@ def loss_classifier(
 
 
 if __name__ == '__main__':
-    LEARNING_RATE = 0.01
+    LEARNING_RATE = 0.05
     EPOCHS = 1010
     BATCH_SIZE = 40
 

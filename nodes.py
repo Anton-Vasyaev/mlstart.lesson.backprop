@@ -66,13 +66,13 @@ class Dense:
         self.input_size = input_size
         self.output_size = output_size
 
-        self.weights = np.random.rand(
+        self.weights = np.random.rand( # (input_size, output_size)
             self.input_size,
             self.output_size
         ) 
         self.weights -= 0.5
         self.weights / 500.0
-        self.biases = np.zeros(self.output_size)
+        self.biases = np.zeros(self.output_size) # (output_size)
 
 
     def forward(self, input_data):
@@ -82,17 +82,20 @@ class Dense:
         self.input_data = input_data.copy()
 
         return self.input_data.dot(self.weights) + self.biases
+        # (input_size) * (input_size, output_size) -> output(j) = input(i) * w(i,j)
 
     
     def backward(self, loss):
         if len(loss.shape) != 1 or loss.shape[0] != self.output_size:
             raise 'wrong tensor shape of loss'
 
-        delta_weights = np.outer(self.input_data, loss)
+        delta_weights = np.outer(self.input_data, loss) # (input_size, output_size) 
+        # delta(i, j) = input(i) * loss(j)
         delta_biases = loss.copy()
 
-        weights_t = self.weights.transpose(1, 0)
-        loss_out = loss.dot(weights_t)
+        weights_t = self.weights.transpose(1, 0) #(output_size, input_size)
+        loss_out = loss.dot(weights_t) 
+        # loss_out(j) = Sum(i -> output_size) ( loss(i) * weight(i, j))
 
         return loss_out, { 
             'w' : delta_weights, 
