@@ -114,14 +114,14 @@ def loss_classifier(
 
 
 if __name__ == '__main__':
-    LEARNING_RATE = 0.03
+    LEARNING_RATE = 0.01
     EPOCHS = 1010
     BATCH_SIZE = 40
 
-    x_train = load_data(
+    x_train = load_data( # (data_size, 28, 28)
         os.path.join('resources', 'train-images.idx3-ubyte')
     )
-    y_train = load_labels(
+    y_train = load_labels( # (data_size, 10)
         os.path.join('resources', 'train-labels.idx1-ubyte')
     )
 
