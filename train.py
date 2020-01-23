@@ -95,7 +95,7 @@ def BATCH_train_example(
             neuro_net_list[layer_idx].get_params()[param_name] += delta
 
 
-def loss_classifier(
+def accuracy_classifier(
     neuro_net_list,
     x_data,
     y_data
@@ -115,7 +115,7 @@ def loss_classifier(
 
 if __name__ == '__main__':
     LEARNING_RATE = 0.05
-    EPOCHS = 1010
+    EPOCHS = 2010
     BATCH_SIZE = 40
 
     x_train = load_data( # (data_size, 28, 28)
@@ -135,7 +135,10 @@ if __name__ == '__main__':
     train_size = x_train.shape[0]
 
     neuronet = list()
-    neuronet.append(Dense(784, 100))
+    neuronet.append(Dense(784, 300))
+    neuronet.append(Sigmoid())
+
+    neuronet.append(Dense(300, 100))
     neuronet.append(Sigmoid())
 
     neuronet.append(Dense(100, 10))
@@ -159,7 +162,7 @@ if __name__ == '__main__':
             LEARNING_RATE
         )
         if epoch_i % 100 == 0 and epoch_i != 0:
-            loss = loss_classifier(
+            loss = accuracy_classifier(
                 neuronet,
                 x_test,
                 y_test
